@@ -1,15 +1,15 @@
 package org.example;
 
 public class Coordinates {
-    public final int left;
-    public final int top;
-    public final int right;
-    public final int bottom;
+    public final int[] leftTop;
+    public final int[] leftBottom;
+    public final int[] rightTop;
+    public final int[] rightBottom;
 
-    Coordinates(int left, int top, int right, int bottom) {
-        this.left = left;
-        this.top = top;
-        this.right = right;
-        this.bottom = bottom;
+    Coordinates(int[] leftTop, int[] leftBottom, int[] rightTop, int[] rightBottom) {
+        this.leftTop = leftTop;
+        this.leftBottom = leftBottom;
+        this.rightTop = rightTop;
+        this.rightBottom = rightBottom;
     }
 }

@@ -43,4 +43,30 @@ public class FaceDetection {
         return CoordinatesUtils.getCoordinates(results);
     }
 
+    public List<Coordinates> getFaceRectanglecoordinates(InputStream inputStream) {
+        byte[] photo;
+
+        try {
+            photo = inputStream.readAllBytes();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        byte[] encodedPhoto = Base64.encodeBase64(photo);
+
+        String requestJson = "{\n" +
+            "    \"folderId\": \"" + folderId + "\",\n" +
+            "    \"analyze_specs\": [{\n" +
+            "        \"content\": \"" + new String(encodedPhoto, StandardCharsets.UTF_8) + "\",\n" +
+            "        \"features\": [{\n" +
+            "            \"type\": \"FACE_DETECTION\"\n" +
+            "        }]\n" +
+            "    }]\n" +
+            "}";
+
+        var results = RequestUtil.send(requestJson);
+
+        return CoordinatesUtils.getCoordinates(results);
+    }
+
 }
