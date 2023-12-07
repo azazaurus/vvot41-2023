@@ -2,12 +2,14 @@ package com.example.telegrambotbackend;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 
+@Component
 public class PhotoUtils {
     FaceBucketClient faceBucketClient = new FaceBucketClient();
     GeneralPhotoBucketClient generalPhotoBucketClient = new GeneralPhotoBucketClient();

@@ -1,56 +1,43 @@
 package com.example.telegrambotbackend;
 
-import jakarta.annotation.PostConstruct;
-import lombok.Getter;
-import java.io.File;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.bots.DefaultBotOptions;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
+import org.telegram.telegrambots.starter.SpringWebhookBot;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 
 @Component
-public class Bot extends TelegramLongPollingBot {
-    private final TelegramBotsApi telegramBotsApi;
-    private final PhotoUtils photoUtils = new PhotoUtils();
+public class Bot extends SpringWebhookBot {
+    private final BotConfig botConfig;
+    private final PhotoUtils photoUtils;
 
-    {
-        try {
-            telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
-        } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
-        }
+    public Bot(DefaultBotOptions options, SetWebhook setWebhook, BotConfig botConfig, PhotoUtils photoUtils) {
+        super(options, setWebhook, botConfig.token);
+
+        this.botConfig = botConfig;
+        this.photoUtils = photoUtils;
     }
-
-    @Getter
-    @Value("${bot.token}")
-    private String botToken;
-
-    @Value("${bot.name}")
-    private String botName;
-
-    @PostConstruct
-    private void init() {
-        try {
-            telegramBotsApi.registerBot(this);
-            photoUtils.init();
-        } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void BotComponent() throws TelegramApiException {}
 
     @Override
-    public void onUpdateReceived(Update update) {
+    public String getBotUsername() {
+        return botConfig.username;
+    }
+
+    @Override
+    public String getBotPath() {
+        return null;
+    }
+
+    @Override
+    public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
         String message = update.getMessage().getText();
         long chatId = update.getMessage().getChatId();
         System.out.println(message);
@@ -87,15 +74,10 @@ public class Bot extends TelegramLongPollingBot {
         else {
             responseMessage.setChatId(chatId);
             responseMessage.setText("Ошибка");
-            try {
-                execute(responseMessage);
-            } catch (TelegramApiException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
 
-    public String getBotUsername() {
-        return botName;
+            return responseMessage;
+        }
+
+        return null;
     }
 }

@@ -46,11 +46,7 @@ public class FaceBucketClient {
     }
 
     public InputStream get() {
-        InputStream inputStream;
-
-        inputStream = s3Client.getObject();
-
-        s3Client.putObject(photosBucketName, fileName, inputStream, metadata);
+        return InputStream.nullInputStream();
     }
 
     private String generateUniqueName() {
