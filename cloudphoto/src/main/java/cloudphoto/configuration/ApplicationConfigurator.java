@@ -1,24 +1,31 @@
 package cloudphoto.configuration;
 
 import cloudphoto.*;
+import cloudphoto.cli.*;
+import cloudphoto.common.Lazy;
 import cloudphoto.configuration.settings.*;
+import org.springframework.beans.factory.config.*;
 import org.springframework.context.*;
+import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.*;
 
+import java.util.*;
 import java.util.function.*;
 
 @Configuration
 public class ApplicationConfigurator {
 	private static final Class<?>[] diConfiguratorClasses = {
 		ApplicationConfigurator.class,
-		ApplicationSettingsConfigurator.class
+		ApplicationSettingsConfigurator.class,
+		CliConfigurator.class
 	};
 
-	private static final Class<?>[] excludedFromProviderRegistrationTypes = { Supplier.class };
+	private static final Class<?>[] excludedFromProviderRegistrationTypes = { Supplier.class, Lazy.class };
 
 	@Bean
-	public Application application() {
-		return new Application();
+	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+	public Application application(List<CliCommand> cliCommandExecutors) {
+		return new Application(cliCommandExecutors);
 	}
 
 	public static ApplicationContext createDiContainer() {
@@ -26,6 +33,8 @@ public class ApplicationConfigurator {
 		diContainer.addBeanFactoryPostProcessor(new LazyInitializationBeanFactoryPostProcessor());
 		diContainer.addBeanFactoryPostProcessor(
 			new SupplierRegistrationBeanFactoryPostProcessor(excludedFromProviderRegistrationTypes));
+		diContainer.addBeanFactoryPostProcessor(
+			new LazyRegistrationBeanFactoryPostProcessor(excludedFromProviderRegistrationTypes));
 
 		diContainer.register(diConfiguratorClasses);
 		diContainer.refresh();
