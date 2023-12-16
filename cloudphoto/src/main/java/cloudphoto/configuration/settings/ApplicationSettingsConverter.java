@@ -53,6 +53,19 @@ public class ApplicationSettingsConverter {
 				bucketNameResult.getValue()));
 	}
 
+	public INIConfiguration toIni(S3Settings s3Settings) {
+		var iniConfiguration = new INIConfiguration();
+		var s3SettingsSection = iniConfiguration.getSection(s3SettingsSectionName);
+
+		s3SettingsSection.setProperty(bucketNameKey, s3Settings.bucketName);
+		s3SettingsSection.setProperty(accessKeyIdKey, s3Settings.accessKeyId);
+		s3SettingsSection.setProperty(secretAccessKeyKey, s3Settings.secretAccessKey);
+		s3SettingsSection.setProperty(regionKey, s3Settings.region);
+		s3SettingsSection.setProperty(accessEndpointUrlKey, s3Settings.accessEndpointUrl);
+
+		return iniConfiguration;
+	}
+
 	private static Result<String, String> getIniProperty(SubnodeConfiguration configuration, String key) {
 		var propertyValue = (String)configuration.getProperty(key);
 		if (propertyValue == null)

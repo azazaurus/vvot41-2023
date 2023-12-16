@@ -36,4 +36,16 @@ public class HomeDirectoryApplicationSettingsRepository implements ApplicationSe
 
 		return settingsResult;
 	}
+
+	@Override
+	public cloudphoto.common.errorresult.Result<String> writeS3Settings(S3Settings s3Settings) {
+		var iniConfiguration = applicationSettingsConverter.toIni(s3Settings);
+		try (var iniFileWriter = new FileWriter(settingsFileName)) {
+			iniConfiguration.write(iniFileWriter);
+		} catch (IOException | ConfigurationException e) {
+			return cloudphoto.common.errorresult.Result.fail(e.getMessage());
+		}
+
+		return cloudphoto.common.errorresult.Result.success();
+	}
 }

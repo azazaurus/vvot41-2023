@@ -3,6 +3,17 @@ package cloudphoto.configuration.settings;
 import java.net.*;
 
 public class S3Settings {
+	public static final URL defaultAccessEndpointUrl;
+	public static final String defaultRegion = "ru-central1";
+
+	static {
+		try {
+			defaultAccessEndpointUrl = new URL("https://storage.yandexcloud.net");
+		} catch (MalformedURLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public URL accessEndpointUrl;
 	public String accessKeyId;
 	public String secretAccessKey;
@@ -23,5 +34,15 @@ public class S3Settings {
 		this.secretAccessKey = secretAccessKey;
 		this.region = region;
 		this.bucketName = bucketName;
+	}
+
+	public static S3Settings createDefault() {
+		return new S3Settings(
+			defaultAccessEndpointUrl,
+			null,
+			null,
+			defaultRegion,
+			null
+		);
 	}
 }
