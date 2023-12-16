@@ -4,6 +4,7 @@ import cloudphoto.*;
 import cloudphoto.cli.*;
 import cloudphoto.common.Lazy;
 import cloudphoto.configuration.settings.*;
+import cloudphoto.s3.*;
 import org.springframework.beans.factory.config.*;
 import org.springframework.context.*;
 import org.springframework.context.annotation.Scope;
@@ -17,7 +18,8 @@ public class ApplicationConfigurator {
 	private static final Class<?>[] diConfiguratorClasses = {
 		ApplicationConfigurator.class,
 		ApplicationSettingsConfigurator.class,
-		CliConfigurator.class
+		CliConfigurator.class,
+		S3Configurator.class
 	};
 
 	private static final Class<?>[] excludedFromProviderRegistrationTypes = { Supplier.class, Lazy.class };

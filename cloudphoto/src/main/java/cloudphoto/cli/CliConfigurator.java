@@ -3,6 +3,7 @@ package cloudphoto.cli;
 import cloudphoto.cli.commands.init.*;
 import cloudphoto.common.Lazy;
 import cloudphoto.configuration.settings.*;
+import cloudphoto.s3.*;
 import org.springframework.beans.factory.config.*;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.*;
@@ -27,7 +28,8 @@ public class CliConfigurator {
 	@Bean
 	public InitCommandExecutor initCommandExecutor(
 			Console console,
-			ApplicationSettingsRepository applicationSettingsRepository) {
-		return new InitCommandExecutor(console, applicationSettingsRepository);
+			ApplicationSettingsRepository applicationSettingsRepository,
+			S3ClientFactory s3ClientFactory) {
+		return new InitCommandExecutor(console, applicationSettingsRepository, s3ClientFactory);
 	}
 }
