@@ -1,10 +1,12 @@
 package cloudphoto.configuration;
 
 import cloudphoto.*;
+import cloudphoto.albums.*;
 import cloudphoto.cli.*;
 import cloudphoto.common.Lazy;
 import cloudphoto.configuration.settings.*;
 import cloudphoto.filesystem.*;
+import cloudphoto.logs.*;
 import cloudphoto.s3.*;
 import org.springframework.beans.factory.config.*;
 import org.springframework.context.*;
@@ -21,7 +23,9 @@ public class ApplicationConfigurator {
 		ApplicationSettingsConfigurator.class,
 		CliConfigurator.class,
 		S3Configurator.class,
-		FileSystemConfigurator.class
+		FileSystemConfigurator.class,
+		LogConfigurator.class,
+		AlbumConfigurator.class
 	};
 
 	private static final Class<?>[] excludedFromProviderRegistrationTypes = { Supplier.class, Lazy.class };

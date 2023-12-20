@@ -5,7 +5,7 @@ import cloudphoto.common.valueerrorresult.*;
 import java.util.*;
 
 public class FileService {
-	private static final String[] photoPathRegexes = { "(?i).*\\.jp[e]g" };
+	private static final String[] photoPathRegexes = { "(?i).*\\.jpe?g" };
 
 	private final FileRepository fileRepository;
 

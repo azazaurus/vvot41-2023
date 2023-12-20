@@ -22,4 +22,12 @@ public class ApplicationSettingsConfigurator {
 			ApplicationSettingsRepository applicationSettingsRepository) {
 		return applicationSettingsRepository.readS3Settings();
 	}
+
+	@Bean
+	public S3Settings s3Settings(Result<S3Settings, String> s3SettingsResult) {
+		if (s3SettingsResult.isFailure())
+			throw new RuntimeException(s3SettingsResult.getError());
+
+		return s3SettingsResult.getValue();
+	}
 }
