@@ -19,6 +19,18 @@ public class AlbumService {
 		this.log = log;
 	}
 
+	public Result<List<String>, String> listAlbums() {
+		var albumNamesResult = albumRepository.getAlbumNames();
+		if (albumNamesResult.isFailure())
+			return Result.fail(albumNamesResult.getError());
+
+		var albumNames = List.copyOf(albumNamesResult.getValue());
+		if (albumNames.isEmpty())
+			return Result.fail("No albums are found");
+
+		return Result.success(albumNames);
+	}
+
 	public Result<List<String>, String> listPhotos(String albumName) {
 		var photoFileNamesResult = internalListPhotos(albumName);
 		if (photoFileNamesResult.isFailure()) {

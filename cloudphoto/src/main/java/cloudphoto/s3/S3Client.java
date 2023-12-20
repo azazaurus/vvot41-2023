@@ -5,6 +5,8 @@ import cloudphoto.common.valueerrorresult.*;
 import java.util.*;
 
 public interface S3Client {
+	Result<List<String>, String> getObjectKeys(String bucketName);
+
 	Result<List<String>, String> searchObjectKeysByPrefix(String bucketName, String prefix);
 
 	Result<byte[], String> getObject(String bucketName, String objectKey);

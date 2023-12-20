@@ -24,6 +24,25 @@ public class S3BucketAlbumRepository implements AlbumRepository {
 	}
 
 	@Override
+	public Result<Set<String>, String> getAlbumNames() {
+		var bucketName = s3SettingsProvider.get().bucketName;
+		var objectKeysResult = s3Client.getObjectKeys(bucketName);
+		if (objectKeysResult.isFailure())
+			return Result.fail(objectKeysResult.getError());
+
+		var albumNames = new HashSet<String>();
+		for (var objectKeyToDecode : objectKeysResult.getValue()) {
+			var decodedObjectKeyResult = decode(objectKeyToDecode);
+			if (decodedObjectKeyResult.isFailure())
+				continue;
+
+			albumNames.add(decodedObjectKeyResult.getValue().albumName);
+		}
+
+		return Result.success(albumNames);
+	}
+
+	@Override
 	public Result<List<ObjectKey>, List<String>> getPhotoFileNames(String albumName) {
 		var bucketName = s3SettingsProvider.get().bucketName;
 		var objectKeysResult = s3Client.searchObjectKeysByPrefix(

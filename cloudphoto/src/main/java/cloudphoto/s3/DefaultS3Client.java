@@ -19,26 +19,18 @@ public class DefaultS3Client implements S3Client {
 	}
 
 	@Override
+	public Result<List<String>, String> getObjectKeys(String bucketName) {
+		var listObjectsRequest = ListObjectsV2Request.builder().bucket(bucketName).build();
+		return listObjects(listObjectsRequest);
+	}
+
+	@Override
 	public Result<List<String>, String> searchObjectKeysByPrefix(String bucketName, String prefix) {
 		var listObjectsRequest = ListObjectsV2Request.builder()
 			.bucket(bucketName)
 			.prefix(prefix)
 			.build();
-		ListObjectsV2Response objectsResponse;
-		try {
-			objectsResponse = s3Client.get().listObjectsV2(listObjectsRequest);
-		}
-		catch (Exception e) {
-			return Result.fail(e.getMessage());
-		}
-
-		if (!objectsResponse.hasContents())
-			return Result.success(List.of());
-
-		return Result.success(
-			objectsResponse.contents().stream()
-				.map(S3Object::key)
-				.collect(Collectors.toList()));
+		return listObjects(listObjectsRequest);
 	}
 
 	@Override
@@ -98,6 +90,24 @@ public class DefaultS3Client implements S3Client {
 		}
 
 		return cloudphoto.common.errorresult.Result.success();
+	}
+
+	private Result<List<String>, String> listObjects(ListObjectsV2Request listObjectsRequest) {
+		ListObjectsV2Response objectsResponse;
+		try {
+			objectsResponse = s3Client.get().listObjectsV2(listObjectsRequest);
+		}
+		catch (Exception e) {
+			return Result.fail(e.getMessage());
+		}
+
+		if (!objectsResponse.hasContents())
+			return Result.success(List.of());
+
+		return Result.success(
+			objectsResponse.contents().stream()
+				.map(S3Object::key)
+				.collect(Collectors.toList()));
 	}
 
 	private static String calculateBase64EncodedMd5(byte[] content) {

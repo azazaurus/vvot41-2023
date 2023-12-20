@@ -34,7 +34,12 @@ public class ListCommandExecutor implements CliCommandExecutor<ListCommand> {
 	}
 
 	private Result<String> listAlbums() {
-		throw new UnsupportedOperationException();
+		var albumNamesResult = albumService.listAlbums();
+		if (albumNamesResult.isFailure())
+			return Result.fail(albumNamesResult.getError());
+
+		console.output(albumNamesResult.getValue());
+		return Result.success();
 	}
 
 	private Result<String> listPhotos(String albumName) {

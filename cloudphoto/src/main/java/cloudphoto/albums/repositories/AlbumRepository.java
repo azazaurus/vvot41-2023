@@ -5,6 +5,8 @@ import cloudphoto.common.valueerrorresult.*;
 import java.util.*;
 
 public interface AlbumRepository {
+	Result<Set<String>, String> getAlbumNames();
+
 	Result<List<ObjectKey>, List<String>> getPhotoFileNames(String albumName);
 
 	Result<byte[], String> downloadPhoto(String albumName, String photoFileName);
