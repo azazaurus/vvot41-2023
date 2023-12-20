@@ -6,6 +6,7 @@ import cloudphoto.filesystem.*;
 import cloudphoto.logs.*;
 
 import java.nio.file.*;
+import java.util.*;
 
 public class AlbumService {
 	private final FileService fileService;
@@ -16,6 +17,16 @@ public class AlbumService {
 		this.fileService = fileService;
 		this.albumRepository = albumRepository;
 		this.log = log;
+	}
+
+	public Result<List<String>, String> listPhotos(String albumName) {
+		var photoFileNamesResult = internalListPhotos(albumName);
+		if (photoFileNamesResult.isFailure()) {
+			var errorMessage = String.join(System.lineSeparator(), photoFileNamesResult.getError());
+			return Result.fail(errorMessage);
+		}
+
+		return Result.success(photoFileNamesResult.getValue());
 	}
 
 	public cloudphoto.common.errorresult.Result<String> uploadPhotos(
@@ -63,38 +74,22 @@ public class AlbumService {
 			return cloudphoto.common.errorresult.Result.fail(
 				"Directory \"" + photoDirectoryPath + "\" is not found");
 
-		var photoFileNamesResult = albumRepository.getPhotoFileNames(albumName);
-		var decodedObjectKeys = photoFileNamesResult.getValue();
-		if (decodedObjectKeys == null)
-			return cloudphoto.common.errorresult.Result.fail(
-				"Can't fetch list of photos in album \"" + albumName + "\" to download. "
-					+ photoFileNamesResult.getError());
-
+		var photoFileNamesResult = internalListPhotos(albumName);
+		var photoFileNames = photoFileNamesResult.getValue();
 		var success = photoFileNamesResult.isSuccess();
-		if (success) {
-			if (decodedObjectKeys.isEmpty())
-				return cloudphoto.common.errorresult.Result.fail("Album \"" + albumName + "\" is not found");
-		}
-		else
+		if (!success) {
 			log.warn(String.join(System.lineSeparator(), photoFileNamesResult.getError()));
+			if (photoFileNames == null)
+				return cloudphoto.common.errorresult.Result.fail("");
+		}
 
-		for (var decodedObjectKey : decodedObjectKeys) {
-			if (!decodedObjectKey.albumName.equals(albumName)) {
-				log.warn(
-					"Photo \""
-						+ decodedObjectKey.photoFileName
-						+ "\" belongs to other album \""
-						+ decodedObjectKey.albumName
-						+ "\"");
-				continue;
-			}
-
-			var photoContentResult = albumRepository.downloadPhoto(albumName, decodedObjectKey.photoFileName);
+		for (var photoFileName : photoFileNames) {
+			var photoContentResult = albumRepository.downloadPhoto(albumName, photoFileName);
 			if (photoContentResult.isFailure()) {
 				success = false;
 				log.warn(
 					"Can't download photo \""
-						+ decodedObjectKey.photoFileName
+						+ photoFileName
 						+ "\" from album \""
 						+ albumName
 						+ "\". "
@@ -104,13 +99,13 @@ public class AlbumService {
 
 			var uploadPhotoResult = fileService.savePhoto(
 				photoDirectoryPath,
-				decodedObjectKey.photoFileName,
+				photoFileName,
 				photoContentResult.getValue());
 			if (uploadPhotoResult.isFailure()) {
 				success = false;
 				log.warn(
 					"Can't save photo \""
-						+ decodedObjectKey.photoFileName
+						+ photoFileName
 						+ "\" to directory \""
 						+ photoDirectoryPath
 						+ "\". "
@@ -121,5 +116,40 @@ public class AlbumService {
 		return success
 			? cloudphoto.common.errorresult.Result.success()
 			: cloudphoto.common.errorresult.Result.fail("");
+	}
+
+	private Result<List<String>, List<String>> internalListPhotos(String albumName) {
+		var photoFileNamesResult = albumRepository.getPhotoFileNames(albumName);
+		var decodedObjectKeys = photoFileNamesResult.getValue();
+		if (decodedObjectKeys == null)
+			return Result.fail(
+				List.of(
+					"Can't fetch list of photos in album \"" + albumName + "\". "
+						+ String.join(". ", photoFileNamesResult.getError())));
+
+		if (photoFileNamesResult.isSuccess() && decodedObjectKeys.isEmpty())
+			return Result.fail(List.of("Album \"" + albumName + "\" is not found"));
+
+		var photoFileNames = new ArrayList<String>();
+		var errors = photoFileNamesResult.isFailure()
+			? photoFileNamesResult.getError()
+			: new ArrayList<String>();
+		for (var decodedObjectKey : decodedObjectKeys) {
+			if (!decodedObjectKey.albumName.equals(albumName)) {
+				errors.add(
+					"Photo \""
+						+ decodedObjectKey.photoFileName
+						+ "\" belongs to other album \""
+						+ decodedObjectKey.albumName
+						+ "\"");
+				continue;
+			}
+
+			photoFileNames.add(decodedObjectKey.photoFileName);
+		}
+
+		return errors.size() > 0
+			? new Result<>(photoFileNames, errors)
+			: Result.success(photoFileNames);
 	}
 }

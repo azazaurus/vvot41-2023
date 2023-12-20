@@ -3,6 +3,7 @@ package cloudphoto.cli;
 import cloudphoto.albums.*;
 import cloudphoto.cli.commands.download.*;
 import cloudphoto.cli.commands.init.*;
+import cloudphoto.cli.commands.list.*;
 import cloudphoto.cli.commands.upload.*;
 import cloudphoto.common.Lazy;
 import cloudphoto.common.valueerrorresult.*;
@@ -49,6 +50,20 @@ public class CliConfigurator {
 			ApplicationSettingsRepository applicationSettingsRepository,
 			S3ClientFactory s3ClientFactory) {
 		return new InitCommandExecutor(console, applicationSettingsRepository, s3ClientFactory);
+	}
+
+	@Bean
+	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+	public ListCommand listCommand(Lazy<ListCommandExecutor> listCommandExecutor) {
+		return new ListCommand(listCommandExecutor);
+	}
+
+	@Bean
+	public ListCommandExecutor listCommandExecutor(
+			Supplier<Result<S3Settings, String>> s3SettingsProvider,
+			AlbumService albumService,
+			Console console) {
+		return new ListCommandExecutor(s3SettingsProvider, albumService, console);
 	}
 
 	@Bean

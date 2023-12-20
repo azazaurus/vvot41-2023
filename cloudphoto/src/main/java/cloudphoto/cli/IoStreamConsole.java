@@ -1,6 +1,7 @@
 package cloudphoto.cli;
 
 import java.io.*;
+import java.util.*;
 
 public class IoStreamConsole implements Console {
 	private final BufferedReader reader;
@@ -28,5 +29,14 @@ public class IoStreamConsole implements Console {
 	@Override
 	public String promptPassword(String prompt) {
 		return prompt(prompt);
+	}
+
+	@Override
+	public void output(Collection<String> lines) {
+		synchronized (writeStream) {
+			for (var line : lines)
+				writeStream.println(line);
+			writeStream.flush();
+		}
 	}
 }

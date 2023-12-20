@@ -26,7 +26,7 @@ public class S3BucketAlbumRepository implements AlbumRepository {
 	@Override
 	public Result<List<ObjectKey>, List<String>> getPhotoFileNames(String albumName) {
 		var bucketName = s3SettingsProvider.get().bucketName;
-		var objectKeysResult = s3Client.get().searchObjectKeysByPrefix(
+		var objectKeysResult = s3Client.searchObjectKeysByPrefix(
 			bucketName,
 			s3ObjectKeyEncoder.encode(albumName) + objectKeysDelimiter);
 		if (objectKeysResult.isFailure())
