@@ -7,6 +7,7 @@ import software.amazon.awssdk.core.sync.*;
 import software.amazon.awssdk.services.s3.model.*;
 
 import java.util.*;
+import java.util.stream.*;
 
 public class DefaultS3Client implements S3Client {
 	private static final Base64.Encoder base64Encoder = Base64.getEncoder();
@@ -15,6 +16,45 @@ public class DefaultS3Client implements S3Client {
 
 	public DefaultS3Client(Lazy<software.amazon.awssdk.services.s3.S3Client> s3Client) {
 		this.s3Client = s3Client;
+	}
+
+	@Override
+	public Result<List<String>, String> searchObjectKeysByPrefix(String bucketName, String prefix) {
+		var listObjectsRequest = ListObjectsV2Request.builder()
+			.bucket(bucketName)
+			.prefix(prefix)
+			.build();
+		ListObjectsV2Response objectsResponse;
+		try {
+			objectsResponse = s3Client.get().listObjectsV2(listObjectsRequest);
+		}
+		catch (Exception e) {
+			return Result.fail(e.getMessage());
+		}
+
+		if (!objectsResponse.hasContents())
+			return Result.success(List.of());
+
+		return Result.success(
+			objectsResponse.contents().stream()
+				.map(S3Object::key)
+				.collect(Collectors.toList()));
+	}
+
+	@Override
+	public Result<byte[], String> getObject(String bucketName, String objectKey) {
+		var getObjectRequest = GetObjectRequest.builder()
+			.bucket(bucketName)
+			.key(objectKey)
+			.build();
+		try {
+			var objectStream = s3Client.get().getObject(getObjectRequest);
+			var object = objectStream.readAllBytes();
+			return Result.success(object);
+		}
+		catch (Exception e) {
+			return Result.fail(e.getMessage());
+		}
 	}
 
 	@Override

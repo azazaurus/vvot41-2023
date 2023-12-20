@@ -20,4 +20,11 @@ public class FileService {
 	public Result<byte[], String> loadPhoto(String directoryPath, String photoFileName) {
 		return fileRepository.readFile(directoryPath, photoFileName);
 	}
+
+	public cloudphoto.common.errorresult.Result<String> savePhoto(
+			String directoryPath,
+			String photoFileName,
+			byte[] photoContent) {
+		return fileRepository.writeFile(directoryPath, photoFileName, photoContent, true);
+	}
 }

@@ -1,6 +1,7 @@
 package cloudphoto.cli;
 
 import cloudphoto.albums.*;
+import cloudphoto.cli.commands.download.*;
 import cloudphoto.cli.commands.init.*;
 import cloudphoto.cli.commands.upload.*;
 import cloudphoto.common.Lazy;
@@ -21,6 +22,19 @@ public class CliConfigurator {
 		return new IoStreamConsole(
 			new BufferedReader(new InputStreamReader(System.in)),
 			System.out);
+	}
+
+	@Bean
+	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+	public DownloadCommand downloadCommand(Lazy<DownloadCommandExecutor> downloadCommandExecutor) {
+		return new DownloadCommand(downloadCommandExecutor);
+	}
+
+	@Bean
+	public DownloadCommandExecutor downloadCommandExecutor(
+			Supplier<Result<S3Settings, String>> s3SettingsProvider,
+			AlbumService albumService) {
+		return new DownloadCommandExecutor(s3SettingsProvider, albumService);
 	}
 
 	@Bean

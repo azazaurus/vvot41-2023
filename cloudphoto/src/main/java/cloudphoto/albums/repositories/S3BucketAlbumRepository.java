@@ -4,6 +4,7 @@ import cloudphoto.common.valueerrorresult.*;
 import cloudphoto.configuration.settings.*;
 import cloudphoto.s3.*;
 
+import java.util.*;
 import java.util.function.*;
 
 public class S3BucketAlbumRepository implements AlbumRepository {
@@ -20,6 +21,39 @@ public class S3BucketAlbumRepository implements AlbumRepository {
 		this.s3ObjectKeyEncoder = s3ObjectKeyEncoder;
 		this.s3SettingsProvider = s3SettingsProvider;
 		this.s3Client = s3Client;
+	}
+
+	@Override
+	public Result<List<ObjectKey>, List<String>> getPhotoFileNames(String albumName) {
+		var bucketName = s3SettingsProvider.get().bucketName;
+		var objectKeysResult = s3Client.get().searchObjectKeysByPrefix(
+			bucketName,
+			s3ObjectKeyEncoder.encode(albumName) + objectKeysDelimiter);
+		if (objectKeysResult.isFailure())
+			return Result.fail(List.of(objectKeysResult.getError()));
+
+		var decodedObjectKeys = new ArrayList<ObjectKey>();
+		var errors = new ArrayList<String>();
+		for (var objectKeyToDecode : objectKeysResult.getValue()) {
+			var decodedObjectKeyResult = decode(objectKeyToDecode);
+			if (decodedObjectKeyResult.isFailure()) {
+				errors.add("Invalid photo. " + decodedObjectKeyResult.getError());
+				continue;
+			}
+
+			decodedObjectKeys.add(decodedObjectKeyResult.getValue());
+		}
+
+		return errors.size() > 0
+			? new Result<>(decodedObjectKeys, errors)
+			: Result.success(decodedObjectKeys);
+	}
+
+	@Override
+	public Result<byte[], String> downloadPhoto(String albumName, String photoFileName) {
+		var bucketName = s3SettingsProvider.get().bucketName;
+		var photoObjectKey = encode(albumName, photoFileName);
+		return s3Client.getObject(bucketName, photoObjectKey);
 	}
 
 	@Override
@@ -56,21 +90,11 @@ public class S3BucketAlbumRepository implements AlbumRepository {
 		try {
 			return Result.success(
 				new ObjectKey(
-			s3ObjectKeyEncoder.decode(encodedAlbumName),
+					s3ObjectKeyEncoder.decode(encodedAlbumName),
 					s3ObjectKeyEncoder.decode(encodedPhotoFileName)));
 		}
 		catch (Exception e) {
 			return Result.fail("Can't decode photo object key \"" + objectKey + "\". " + e.getMessage());
-		}
-	}
-
-	private static class ObjectKey {
-		public final String albumName;
-		public final String photoFileName;
-
-		public ObjectKey(String albumName, String photoFileName) {
-			this.albumName = albumName;
-			this.photoFileName = photoFileName;
 		}
 	}
 }
