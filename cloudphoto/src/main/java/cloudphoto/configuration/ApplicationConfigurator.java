@@ -8,6 +8,7 @@ import cloudphoto.configuration.settings.*;
 import cloudphoto.filesystem.*;
 import cloudphoto.logs.*;
 import cloudphoto.s3.*;
+import cloudphoto.site.*;
 import org.springframework.beans.factory.config.*;
 import org.springframework.context.*;
 import org.springframework.context.annotation.Scope;
@@ -25,7 +26,8 @@ public class ApplicationConfigurator {
 		S3Configurator.class,
 		FileSystemConfigurator.class,
 		LogConfigurator.class,
-		AlbumConfigurator.class
+		AlbumConfigurator.class,
+		SiteConfigurator.class
 	};
 
 	private static final Class<?>[] excludedFromProviderRegistrationTypes = { Supplier.class, Lazy.class };
