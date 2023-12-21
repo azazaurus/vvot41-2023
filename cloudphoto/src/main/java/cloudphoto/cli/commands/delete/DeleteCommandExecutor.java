@@ -26,7 +26,7 @@ public class DeleteCommandExecutor implements CliCommandExecutor<DeleteCommand> 
 			return Result.fail(s3SettingsResult.getError());
 
 		if (deleteCommand.photoFileName == null)
-			throw new UnsupportedOperationException();
+			return albumService.deleteAlbum(deleteCommand.albumName);
 
 		return albumService.deletePhoto(deleteCommand.albumName, deleteCommand.photoFileName);
 	}

@@ -20,6 +20,8 @@ public interface AlbumRepository {
 
 	cloudphoto.common.errorresult.Result<String> deletePhoto(String albumName, String photoFileName);
 
+	cloudphoto.common.errorresult.Result<String> deletePhotos(String albumName, List<String> photoFileNames);
+
 	class ObjectKey {
 		public final String albumName;
 		public final String photoFileName;

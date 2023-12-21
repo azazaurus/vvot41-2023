@@ -131,7 +131,12 @@ public class AlbumService {
 	}
 
 	public cloudphoto.common.errorresult.Result<String> deleteAlbum(String albumName) {
-		throw new UnsupportedOperationException();
+		var photoFileNamesResult = listPhotos(albumName);
+		if (photoFileNamesResult.isFailure())
+			return cloudphoto.common.errorresult.Result.fail(
+				String.join(". ", photoFileNamesResult.getError()));
+
+		return albumRepository.deletePhotos(albumName, photoFileNamesResult.getValue());
 	}
 
 	public cloudphoto.common.errorresult.Result<String> deletePhoto(String albumName, String photoFileName) {

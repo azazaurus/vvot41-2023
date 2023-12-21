@@ -6,6 +6,7 @@ import cloudphoto.s3.*;
 
 import java.util.*;
 import java.util.function.*;
+import java.util.stream.*;
 
 public class S3BucketAlbumRepository implements AlbumRepository {
 	private static final String objectKeysDelimiter = "/";
@@ -95,6 +96,17 @@ public class S3BucketAlbumRepository implements AlbumRepository {
 		var bucketName = s3SettingsProvider.get().bucketName;
 		var photoObjectKey = encode(albumName, photoFileName);
 		return s3Client.deleteObject(bucketName, photoObjectKey);
+	}
+
+	@Override
+	public cloudphoto.common.errorresult.Result<String> deletePhotos(
+			String albumName,
+			List<String> photoFileNames) {
+		var bucketName = s3SettingsProvider.get().bucketName;
+		var photoObjectKeys = photoFileNames.stream()
+			.map(photoFileName -> encode(albumName, photoFileName))
+			.collect(Collectors.toList());
+		return s3Client.deleteObjects(bucketName, photoObjectKeys);
 	}
 
 	private String encode(String albumName, String photoFileName) {

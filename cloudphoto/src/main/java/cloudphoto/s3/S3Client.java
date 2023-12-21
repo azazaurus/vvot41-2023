@@ -20,4 +20,6 @@ public interface S3Client {
 		byte[] objectContent);
 
 	cloudphoto.common.errorresult.Result<String> deleteObject(String bucketName, String objectKey);
+
+	cloudphoto.common.errorresult.Result<String> deleteObjects(String bucketName,	List<String> objectKeys);
 }

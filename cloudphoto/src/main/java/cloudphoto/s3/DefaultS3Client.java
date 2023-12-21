@@ -108,6 +108,34 @@ public class DefaultS3Client implements S3Client {
 		return cloudphoto.common.errorresult.Result.success();
 	}
 
+	@Override
+	public cloudphoto.common.errorresult.Result<String> deleteObjects(
+			String bucketName,
+			List<String> objectKeys) {
+		var objectIds = objectKeys.stream()
+			.map(objectKey -> ObjectIdentifier.builder().key(objectKey).build())
+			.toArray(ObjectIdentifier[]::new);
+		var deleteObjectsRequest = DeleteObjectsRequest.builder()
+			.bucket(bucketName)
+			.delete(Delete.builder().objects(objectIds).build())
+			.build();
+		try {
+			var deleteObjectsResponse = s3Client.get().deleteObjects(deleteObjectsRequest);
+			if (deleteObjectsResponse.hasErrors()) {
+				var errorMessages = deleteObjectsResponse.errors().stream()
+					.map(S3Error::message)
+					.collect(Collectors.toList());
+				return cloudphoto.common.errorresult.Result.fail(
+					String.join(System.lineSeparator(), errorMessages));
+			}
+
+			return cloudphoto.common.errorresult.Result.success();
+		}
+		catch (Exception e) {
+			return cloudphoto.common.errorresult.Result.fail(e.getMessage());
+		}
+	}
+
 	private Result<List<String>, String> listObjects(ListObjectsV2Request listObjectsRequest) {
 		ListObjectsV2Response objectsResponse;
 		try {
