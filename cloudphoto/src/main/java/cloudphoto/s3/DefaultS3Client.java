@@ -92,6 +92,22 @@ public class DefaultS3Client implements S3Client {
 		return cloudphoto.common.errorresult.Result.success();
 	}
 
+	@Override
+	public cloudphoto.common.errorresult.Result<String> deleteObject(String bucketName, String objectKey) {
+		var deleteObjectRequest = DeleteObjectRequest.builder()
+			.bucket(bucketName)
+			.key(objectKey)
+			.build();
+		try {
+			s3Client.get().deleteObject(deleteObjectRequest);
+		}
+		catch (Exception e) {
+			return cloudphoto.common.errorresult.Result.fail(e.getMessage());
+		}
+
+		return cloudphoto.common.errorresult.Result.success();
+	}
+
 	private Result<List<String>, String> listObjects(ListObjectsV2Request listObjectsRequest) {
 		ListObjectsV2Response objectsResponse;
 		try {

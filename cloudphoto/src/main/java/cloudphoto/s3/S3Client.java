@@ -18,4 +18,6 @@ public interface S3Client {
 		String objectKey,
 		String contentType,
 		byte[] objectContent);
+
+	cloudphoto.common.errorresult.Result<String> deleteObject(String bucketName, String objectKey);
 }

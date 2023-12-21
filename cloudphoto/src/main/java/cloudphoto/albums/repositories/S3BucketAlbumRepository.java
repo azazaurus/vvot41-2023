@@ -90,6 +90,13 @@ public class S3BucketAlbumRepository implements AlbumRepository {
 		return s3Client.uploadObject(bucketName, photoObjectKey, "image/jpeg", photoContent);
 	}
 
+	@Override
+	public cloudphoto.common.errorresult.Result<String> deletePhoto(String albumName, String photoFileName) {
+		var bucketName = s3SettingsProvider.get().bucketName;
+		var photoObjectKey = encode(albumName, photoFileName);
+		return s3Client.deleteObject(bucketName, photoObjectKey);
+	}
+
 	private String encode(String albumName, String photoFileName) {
 		return s3ObjectKeyEncoder.encode(albumName)
 			+ objectKeysDelimiter

@@ -130,6 +130,41 @@ public class AlbumService {
 			: cloudphoto.common.errorresult.Result.fail("");
 	}
 
+	public cloudphoto.common.errorresult.Result<String> deleteAlbum(String albumName) {
+		throw new UnsupportedOperationException();
+	}
+
+	public cloudphoto.common.errorresult.Result<String> deletePhoto(String albumName, String photoFileName) {
+		var photoFileNamesResult = internalListPhotos(albumName);
+		if (photoFileNamesResult.isFailure())
+			return cloudphoto.common.errorresult.Result.fail(
+				"Can't check existence of photo \""
+					+ photoFileName
+					+ "\" in album \""
+					+ albumName
+					+ "\". "
+					+ String.join(". ", photoFileNamesResult.getError()));
+
+		var photoFileNames = photoFileNamesResult.getValue();
+		if (photoFileNames.isEmpty())
+			return cloudphoto.common.errorresult.Result.fail("Album \"" + albumName + "\" is not found");
+		if (!photoFileNames.contains(photoFileName))
+			return cloudphoto.common.errorresult.Result.fail(
+				"Photo \"" + photoFileName + "\" is not found in album \"" + albumName + "\"");
+
+		var deletionResult = albumRepository.deletePhoto(albumName, photoFileName);
+		if (deletionResult.isFailure())
+			return cloudphoto.common.errorresult.Result.fail(
+				"Can't delete photo \""
+					+ photoFileName
+					+ "\" from album \""
+					+ albumName
+					+ "\". "
+					+ deletionResult.getError());
+
+		return cloudphoto.common.errorresult.Result.success();
+	}
+
 	private Result<List<String>, List<String>> internalListPhotos(String albumName) {
 		var photoFileNamesResult = albumRepository.getPhotoFileNames(albumName);
 		var decodedObjectKeys = photoFileNamesResult.getValue();

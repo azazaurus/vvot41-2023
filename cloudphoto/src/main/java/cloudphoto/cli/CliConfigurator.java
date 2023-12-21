@@ -1,6 +1,7 @@
 package cloudphoto.cli;
 
 import cloudphoto.albums.*;
+import cloudphoto.cli.commands.delete.*;
 import cloudphoto.cli.commands.download.*;
 import cloudphoto.cli.commands.init.*;
 import cloudphoto.cli.commands.list.*;
@@ -23,6 +24,19 @@ public class CliConfigurator {
 		return new IoStreamConsole(
 			new BufferedReader(new InputStreamReader(System.in)),
 			System.out);
+	}
+
+	@Bean
+	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+	public DeleteCommand deleteCommand(Lazy<DeleteCommandExecutor> deleteCommandExecutor) {
+		return new DeleteCommand(deleteCommandExecutor);
+	}
+
+	@Bean
+	public DeleteCommandExecutor deleteCommandExecutor(
+			Supplier<Result<S3Settings, String>> s3SettingsProvider,
+			AlbumService albumService) {
+		return new DeleteCommandExecutor(s3SettingsProvider, albumService);
 	}
 
 	@Bean
