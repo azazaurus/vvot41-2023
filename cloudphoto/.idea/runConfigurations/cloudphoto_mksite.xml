@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="cloudphoto mksite" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="cloudphoto.Application" />
+    <module name="cloudphoto" />
+    <option name="PROGRAM_PARAMETERS" value="mksite" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="cloudphoto.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

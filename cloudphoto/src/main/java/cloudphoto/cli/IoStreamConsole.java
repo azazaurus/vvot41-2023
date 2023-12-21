@@ -32,6 +32,14 @@ public class IoStreamConsole implements Console {
 	}
 
 	@Override
+	public void output(String line) {
+		synchronized (writeStream) {
+			writeStream.println(line);
+			writeStream.flush();
+		}
+	}
+
+	@Override
 	public void output(Collection<String> lines) {
 		synchronized (writeStream) {
 			for (var line : lines)

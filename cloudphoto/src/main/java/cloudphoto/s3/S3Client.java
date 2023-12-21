@@ -22,4 +22,9 @@ public interface S3Client {
 	cloudphoto.common.errorresult.Result<String> deleteObject(String bucketName, String objectKey);
 
 	cloudphoto.common.errorresult.Result<String> deleteObjects(String bucketName,	List<String> objectKeys);
+
+	cloudphoto.common.errorresult.Result<String> publishBucketWebsite(
+		String bucketName,
+		String indexDocumentPath,
+		String errorDocumentPath);
 }

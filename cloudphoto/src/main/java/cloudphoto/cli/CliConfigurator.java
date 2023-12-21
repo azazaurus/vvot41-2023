@@ -5,11 +5,13 @@ import cloudphoto.cli.commands.delete.*;
 import cloudphoto.cli.commands.download.*;
 import cloudphoto.cli.commands.init.*;
 import cloudphoto.cli.commands.list.*;
+import cloudphoto.cli.commands.mksite.*;
 import cloudphoto.cli.commands.upload.*;
 import cloudphoto.common.Lazy;
 import cloudphoto.common.valueerrorresult.*;
 import cloudphoto.configuration.settings.*;
 import cloudphoto.s3.*;
+import cloudphoto.site.*;
 import org.springframework.beans.factory.config.*;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.*;
@@ -78,6 +80,20 @@ public class CliConfigurator {
 			AlbumService albumService,
 			Console console) {
 		return new ListCommandExecutor(s3SettingsProvider, albumService, console);
+	}
+
+	@Bean
+	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+	public MkSiteCommand mkSiteCommand(Lazy<MkSiteCommandExecutor> mkSiteCommandExecutor) {
+		return new MkSiteCommand(mkSiteCommandExecutor);
+	}
+
+	@Bean
+	public MkSiteCommandExecutor mkSiteCommandExecutor(
+			Supplier<Result<S3Settings, String>> s3SettingsProvider,
+			SiteService siteService,
+			Console console) {
+		return new MkSiteCommandExecutor(s3SettingsProvider, siteService, console);
 	}
 
 	@Bean

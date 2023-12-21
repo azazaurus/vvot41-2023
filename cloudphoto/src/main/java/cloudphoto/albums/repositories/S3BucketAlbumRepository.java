@@ -69,6 +69,32 @@ public class S3BucketAlbumRepository implements AlbumRepository {
 			: Result.success(decodedObjectKeys);
 	}
 
+	public Result<Map<String, String>, String> getPhotoFileNameToObjectKeyMap(String albumName) {
+		var bucketName = s3SettingsProvider.get().bucketName;
+		var objectKeysResult = s3Client.searchObjectKeysByPrefix(
+			bucketName,
+			s3ObjectKeyEncoder.encode(albumName) + objectKeysDelimiter);
+		if (objectKeysResult.isFailure())
+			return Result.fail(objectKeysResult.getError());
+
+		var photoFileNameToObjectKeyMap = new HashMap<String, String>();
+		var errors = new ArrayList<String>();
+		for (var objectKeyToDecode : objectKeysResult.getValue()) {
+			var decodedObjectKeyResult = decode(objectKeyToDecode);
+			if (decodedObjectKeyResult.isFailure()) {
+				errors.add("Invalid photo. " + decodedObjectKeyResult.getError());
+				continue;
+			}
+
+			var decodedObjectKey = decodedObjectKeyResult.getValue();
+			photoFileNameToObjectKeyMap.put(decodedObjectKey.photoFileName, objectKeyToDecode);
+		}
+
+		return errors.size() > 0
+			? Result.fail(String.join(System.lineSeparator(), errors))
+			: Result.success(photoFileNameToObjectKeyMap);
+	}
+
 	@Override
 	public Result<byte[], String> downloadPhoto(String albumName, String photoFileName) {
 		var bucketName = s3SettingsProvider.get().bucketName;

@@ -7,5 +7,7 @@ public interface Console {
 
 	String promptPassword(String prompt);
 
+	void output(String line);
+
 	void output(Collection<String> lines);
 }

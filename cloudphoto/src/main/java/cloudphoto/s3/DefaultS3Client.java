@@ -136,6 +136,18 @@ public class DefaultS3Client implements S3Client {
 		}
 	}
 
+	@Override
+	public cloudphoto.common.errorresult.Result<String> publishBucketWebsite(
+			String bucketName,
+			String indexDocumentPath,
+			String errorDocumentPath) {
+		var publicAccessResult = setUpPublicAccess(bucketName);
+		if (publicAccessResult.isFailure())
+			return publicAccessResult;
+
+		return setUpWebsite(bucketName, indexDocumentPath, errorDocumentPath);
+	}
+
 	private Result<List<String>, String> listObjects(ListObjectsV2Request listObjectsRequest) {
 		ListObjectsV2Response objectsResponse;
 		try {
@@ -152,6 +164,43 @@ public class DefaultS3Client implements S3Client {
 			objectsResponse.contents().stream()
 				.map(S3Object::key)
 				.collect(Collectors.toList()));
+	}
+
+	private cloudphoto.common.errorresult.Result<String> setUpPublicAccess(String bucketName) {
+		var publicAccessSetupRequest = PutBucketAclRequest.builder()
+			.bucket(bucketName)
+			.acl(BucketCannedACL.PUBLIC_READ)
+			.build();
+
+		try {
+			s3Client.get().putBucketAcl(publicAccessSetupRequest);
+			return cloudphoto.common.errorresult.Result.success();
+		}
+		catch (Exception e) {
+			return cloudphoto.common.errorresult.Result.fail(e.getMessage());
+		}
+	}
+
+	private cloudphoto.common.errorresult.Result<String> setUpWebsite(
+			String bucketName,
+			String indexDocumentPath,
+			String errorDocumentPath) {
+		var websiteConfiguration = WebsiteConfiguration.builder()
+			.indexDocument(IndexDocument.builder().suffix(indexDocumentPath).build())
+			.errorDocument(ErrorDocument.builder().key(errorDocumentPath).build())
+			.build();
+		var publishBucketWebsiteRequest = PutBucketWebsiteRequest.builder()
+			.bucket(bucketName)
+			.websiteConfiguration(websiteConfiguration)
+			.build();
+
+		try {
+			s3Client.get().putBucketWebsite(publishBucketWebsiteRequest);
+			return cloudphoto.common.errorresult.Result.success();
+		}
+		catch (Exception e) {
+			return cloudphoto.common.errorresult.Result.fail(e.getMessage());
+		}
 	}
 
 	private static String calculateBase64EncodedMd5(byte[] content) {
